@@ -630,6 +630,86 @@
             box-shadow: 0 4px 14px rgba(200, 120, 145, 0.3);
         }
 
+        .search-container {
+            max-width: 500px;
+            margin: 0 auto 24px;
+            position: relative;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 10px 44px 10px 18px;
+            border: 2px solid var(--border);
+            border-radius: 24px;
+            font-size: 0.9rem;
+            background: #fff;
+            color: var(--text);
+            transition: all var(--transition);
+            outline: none;
+            font-family: inherit;
+            letter-spacing: 0.04em;
+        }
+
+        .search-container input::placeholder {
+            color: #c0b0b8;
+            letter-spacing: 0.04em;
+        }
+
+        .search-container input:focus {
+            border-color: var(--pink);
+            box-shadow: 0 0 0 4px rgba(232, 160, 184, 0.15);
+        }
+
+        .search-container .clear-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 50%;
+            transition: all var(--transition);
+            line-height: 1;
+            display: none;
+        }
+
+        .search-container .clear-btn:hover {
+            background: var(--pink-light);
+            color: var(--pink-dark);
+        }
+
+        .search-container .clear-btn.visible {
+            display: block;
+        }
+
+        .search-container .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #c0b0b8;
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+
+        .no-result {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            letter-spacing: 0.04em;
+            display: none;
+            grid-column: 1 / -1;
+        }
+
+        .no-result.visible {
+            display: block;
+        }
+
         .about-section {
             margin: 36px 0;
             background: linear-gradient(135deg, #fef5f7 0%, #fff 40%, #fdf0f4 100%);
@@ -818,6 +898,14 @@
             .stats-bar {
                 gap: 20px;
             }
+            .search-container {
+                max-width: 100%;
+                margin: 0 auto 16px;
+            }
+            .search-container input {
+                padding: 8px 40px 8px 14px;
+                font-size: 0.85rem;
+            }
         }
 
         @media (max-width: 400px) {
@@ -918,7 +1006,14 @@
             <h2>我的游玩记录</h2>  <!-- 也可以改成个人测评一类的标题-->
             <span class="sub">Game Records</span>
         </div>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="搜索游戏记录..." />
+            <button id="searchClear" class="clear-btn">×</button>
+        </div>
+
         <div class="grid-cards" id="gameCards"></div>
+        <div class="no-result" id="noResult">没有找到匹配的游戏记录</div>
         <div class="load-more-btn">
             <button id="loadMoreBtn">加载更多记录</button>
         </div>
@@ -928,16 +1023,14 @@
     <footer>
         <div class="footer-inner">
             <ul class="footer-links">
-				<!-- 没什么强制性必填啥的 不想要就可以整行删 -->
+                <!-- 没什么强制性必填啥的 不想要就可以整行删 -->
                 <li><a href="这里放你的链接，如果你想放的话">微博</a></li>
                 <li><a href="这里放你的链接，如果你想放的话">小红书</a></li>
                 <li><a href="这里放你的链接，如果你想放的话">GitHub 仓库</a></li>  <!-- 请不要删这行 -->
                 <li><a href="这里放你的链接，如果你想放的话">联系我</a></li>
             </ul>
-				
-            </div>
-            <p class="copyright">&copy; <!-- 可以把这个注释删了，换成你想要的句子 --></p>
         </div>
+        <p class="copyright">&copy; <!-- 可以把这个注释删了，换成你想要的句子 --></p>
     </footer>
 
     <script>
@@ -948,130 +1041,125 @@
             const navbar = document.getElementById('navbar');
             const loadMoreBtn = document.getElementById('loadMoreBtn');
             const gameCardsContainer = document.getElementById('gameCards');
+            const searchInput = document.getElementById('searchInput');
+            const searchClear = document.getElementById('searchClear');
+            const noResult = document.getElementById('noResult');
 
             // 分别是评分、游戏封面、游戏标签、游戏标题、通关时间、想说的话/简介
             // 将游戏封面图片放在网站根目录的images文件夹下  "images/"是文件路径
-			// 为防止网页运行卡顿，请尽量使用大小在300KB（或者更小）左右的图片，图片越小加载越快，并不是不能放大图
-			// 以下填写仅作演示，可以自行修改~
-			// 图片示例仅适合本地观看演示
-			
-            const gameData = [
-                {
-                    rating: 5.0,
-                    image: "images/封面1.jpg",
-                    title: "百密一疏少女心",
-                    tag: "喜剧",
-                    fullTitle: "百密一疏少女心",
-                    playDate: "2026.xx.xx",
-                    thought: "这里是介绍（简介）"
-                },
-                {
-                    rating: 3.0,
-                    image: "images/封面2.jpg",
-                    title: "游戏1",
-                    tag: "标签",
-                    fullTitle: "游戏1",
-                    playDate: "2026.xx.xx",
-                    thought: "这里是介绍（简介）"
-                },
-                {
-                    rating: 2.0,
-                    image: "images/封面8.jpg",
-                    title: "游戏2",
-                    tag: "标签",
-                    fullTitle: "游戏2",
-                    playDate: "2026.xx.xx",
-                    thought: "这里是介绍（简介）"
-                },
-                {
-                    rating: 4.0,
-                    image: "images/封面3.jpeg",
-                    title: "游戏3",
-                    tag: "标签",
-                    fullTitle: "游戏3",
-                    playDate: "2026.xx.xx",
-                    thought: "这里是介绍（简介）"
-                },
-                {
-                    rating: 2.5,
-                    image: "images/封面4.png",
-                    title: "游戏4",
-                    tag: "标签",
-                    fullTitle: "游戏4",
-                    playDate: "2026.xx.xx",
-                    thought: "这里是介绍（简介）"
-                },
-                {
-                    rating: 3.5,
-                    image: "images/封面5.jpg",
-                    title: "游戏5",
-                    tag: "标签",
-                    fullTitle: "游戏5",
-                    playDate: "2026.xx.xx",
-                    thought: "这里是介绍（简介）"
-                },
-                {
-                    rating: 4.5,
-                    image: "images/封面6.jpg",
-                    title: "游戏6",
-                    tag: "标签",
-                    fullTitle: "游戏6",
-                    playDate: "2026.xx.xx",
-                    thought: "这里是介绍（简介）"
-                },
-                {
-                    rating: 2.5,
-                    image: "images/封面7.jpg",
-                    title: "游戏7",
-                    tag: "标签",
-                    fullTitle: "游戏7",
-                    playDate: "2026.xx.xx",
-                    thought: "这里是介绍（简介）"
-                },
-                {
-                    rating: 3.5,
-                    image: "images/封面8.jpg",
-                    title: "游戏8",
-                    tag: "标签",
-                    fullTitle: "游戏8",
-                    playDate: "2026.xx.xx",
-                    thought: "这里是介绍（简介）"
-                },
-                {
-                    rating: 1.5,
-                    image: "images/封面9.jpg",
-                    title: "游戏9",
-                    tag: "标签",
-                    fullTitle: "游戏9",
-                    playDate: "2026.xx.xx",
-                    thought: "这里是介绍（简介）"
-                },
-                {
-                    rating: 2.0,
-                    image: "images/封面10.jpg",
-                    title: "游戏10",
-                    tag: "标签",
-                    fullTitle: "游戏10",
-                    playDate: "2026.xx.xx",
-                    thought: "这里是介绍（简介）"
-                }
-                
-				// 这里只放十个卡片作为举例
-				// 可以直接复制粘贴一个大括号的内容，修改数据，新增卡片
-				// 倒数第二个大括号后面一定要有逗号，不然会导致数据出错，无法显示
-				// 我自己写着写着也很容易丢逗号，所以这里改的话还是自己小心一点更好
-            ];
+            // 为防止网页运行卡顿，请尽量使用大小在300KB（或者更小）左右的图片，图片越小加载越快，并不是不能放大图
+            // 以下填写仅作演示，可以自行修改~
+            // 图片示例仅适合本地观看演示
+
+            const gameData = [{
+                rating: 5.0,
+                image: "images/封面1.jpg",
+                title: "百密一疏少女心",
+                tag: "喜剧",
+                fullTitle: "百密一疏少女心",
+                playDate: "2026.xx.xx",
+                thought: "这里是介绍（简介）"
+            }, {
+                rating: 3.0,
+                image: "images/封面2.jpg",
+                title: "游戏1",
+                tag: "标签",
+                fullTitle: "游戏1",
+                playDate: "2026.xx.xx",
+                thought: "这里是介绍（简介）"
+            }, {
+                rating: 2.0,
+                image: "images/封面8.jpg",
+                title: "游戏2",
+                tag: "标签",
+                fullTitle: "游戏2",
+                playDate: "2026.xx.xx",
+                thought: "这里是介绍（简介）"
+            }, {
+                rating: 4.0,
+                image: "images/封面3.jpeg",
+                title: "游戏3",
+                tag: "标签",
+                fullTitle: "游戏3",
+                playDate: "2026.xx.xx",
+                thought: "这里是介绍（简介）"
+            }, {
+                rating: 2.5,
+                image: "images/封面4.png",
+                title: "游戏4",
+                tag: "标签",
+                fullTitle: "游戏4",
+                playDate: "2026.xx.xx",
+                thought: "这里是介绍（简介）"
+            }, {
+                rating: 3.5,
+                image: "images/封面5.jpg",
+                title: "游戏5",
+                tag: "标签",
+                fullTitle: "游戏5",
+                playDate: "2026.xx.xx",
+                thought: "这里是介绍（简介）"
+            }, {
+                rating: 4.5,
+                image: "images/封面6.jpg",
+                title: "游戏6",
+                tag: "标签",
+                fullTitle: "游戏6",
+                playDate: "2026.xx.xx",
+                thought: "这里是介绍（简介）"
+            }, {
+                rating: 2.5,
+                image: "images/封面7.jpg",
+                title: "游戏7",
+                tag: "标签",
+                fullTitle: "游戏7",
+                playDate: "2026.xx.xx",
+                thought: "这里是介绍（简介）"
+            }, {
+                rating: 3.5,
+                image: "images/封面8.jpg",
+                title: "游戏8",
+                tag: "标签",
+                fullTitle: "游戏8",
+                playDate: "2026.xx.xx",
+                thought: "这里是介绍（简介）"
+            }, {
+                rating: 1.5,
+                image: "images/封面9.jpg",
+                title: "游戏9",
+                tag: "标签",
+                fullTitle: "游戏9",
+                playDate: "2026.xx.xx",
+                thought: "这里是介绍（简介）"
+            }, {
+                rating: 2.0,
+                image: "images/封面10.jpg",
+                title: "游戏10",
+                tag: "标签",
+                fullTitle: "游戏10",
+                playDate: "2026.xx.xx",
+                thought: "这里是介绍（简介）"
+            }];
+
+            // 这里只放十个卡片作为举例
+            // 可以直接复制粘贴一个大括号的内容，修改数据，新增卡片
+            // 倒数第二个大括号后面一定要有逗号，不然会导致数据出错，无法显示
+            // 我自己写着写着也很容易丢逗号，所以这里改的话还是自己小心一点更好
+
+            let savedHiddenStates = [];
+            let savedLoadMoreVisible = true;
 
             function renderGameCards(data, isHidden = false) {
                 data.forEach(game => {
                     const card = document.createElement('div');
                     card.className = `card${isHidden ? ' hidden' : ''}`;
-                    
+
                     let imageHtml = '';
                     if (game.image) {
-                        imageHtml = `<img src="${game.image}" alt="${game.fullTitle}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">`;
+                        imageHtml =
+                            `<img src="${game.image}" alt="${game.fullTitle}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">`;
                     }
-                    
+
                     card.innerHTML = `
                         <div class="card-img">
                             <span class="rating-badge">★ ${game.rating}</span>
@@ -1092,6 +1180,107 @@
             // tip：这里可以设置页面可见卡片数量，剩余隐藏
             renderGameCards(gameData.slice(0, 8));
             renderGameCards(gameData.slice(8), true);
+
+            function saveCurrentState() {
+                const cards = gameCardsContainer.children;
+                savedHiddenStates = [];
+                for (let i = 0; i < cards.length; i++) {
+                    savedHiddenStates.push(cards[i].classList.contains('hidden'));
+                }
+                savedLoadMoreVisible = loadMoreBtn.style.display !== 'none';
+            }
+
+            function restoreSavedState() {
+                const cards = gameCardsContainer.children;
+                for (let i = 0; i < cards.length; i++) {
+                    if (i < savedHiddenStates.length) {
+                        if (savedHiddenStates[i]) {
+                            cards[i].classList.add('hidden');
+                        } else {
+                            cards[i].classList.remove('hidden');
+                        }
+                    }
+                }
+                loadMoreBtn.style.display = savedLoadMoreVisible ? 'block' : 'none';
+                noResult.classList.remove('visible');
+                searchClear.classList.remove('visible');
+            }
+
+            function resetToInitialState() {
+                const cards = gameCardsContainer.children;
+                for (let i = 0; i < cards.length; i++) {
+                    if (i < 8) {
+                        cards[i].classList.remove('hidden');
+                    } else {
+                        cards[i].classList.add('hidden');
+                    }
+                }
+                loadMoreBtn.style.display = 'block';
+                noResult.classList.remove('visible');
+                searchClear.classList.remove('visible');
+            }
+
+            function performSearch(keyword) {
+                const trimmed = keyword.trim().toLowerCase();
+                if (trimmed === '') {
+                    restoreSavedState();
+                    return;
+                }
+
+                const cards = gameCardsContainer.children;
+                let hasMatch = false;
+
+                for (let i = 0; i < cards.length; i++) {
+                    const game = gameData[i];
+                    if (!game) continue;
+                    const match =
+                        game.title.toLowerCase().includes(trimmed) ||
+                        game.tag.toLowerCase().includes(trimmed) ||
+                        game.fullTitle.toLowerCase().includes(trimmed) ||
+                        game.thought.toLowerCase().includes(trimmed) ||
+                        game.playDate.includes(trimmed);
+                    if (match) {
+                        cards[i].classList.remove('hidden');
+                        hasMatch = true;
+                    } else {
+                        cards[i].classList.add('hidden');
+                    }
+                }
+
+                if (hasMatch) {
+                    noResult.classList.remove('visible');
+                } else {
+                    noResult.classList.add('visible');
+                }
+                loadMoreBtn.style.display = 'none';
+                searchClear.classList.add('visible');
+            }
+
+            searchInput.addEventListener('input', function() {
+                const keyword = this.value;
+                if (keyword.trim() === '') {
+                    if (savedHiddenStates.length > 0) {
+                        restoreSavedState();
+                    } else {
+                        resetToInitialState();
+                    }
+                    return;
+                }
+                if (savedHiddenStates.length === 0) {
+                    saveCurrentState();
+                }
+                performSearch(keyword);
+            });
+
+            searchClear.addEventListener('click', function() {
+                searchInput.value = '';
+                if (savedHiddenStates.length > 0) {
+                    restoreSavedState();
+                } else {
+                    resetToInitialState();
+                }
+                searchInput.focus();
+            });
 
             loadMoreBtn.addEventListener('click', function() {
                 const hiddenCards = document.querySelectorAll('.card.hidden');
@@ -1146,7 +1335,8 @@
                     if (target) {
                         e.preventDefault();
                         const navHeight = navbar.offsetHeight;
-                        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - navHeight - 12;
+                        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset -
+                            navHeight - 12;
                         window.scrollTo({
                             top: targetPosition,
                             behavior: 'smooth'
@@ -1162,7 +1352,7 @@
             //     renderGameCards(data.slice(0, 8));
             //     renderGameCards(data.slice(8), true);
             //   });
-			
+
         })();
     </script>
 </body>
